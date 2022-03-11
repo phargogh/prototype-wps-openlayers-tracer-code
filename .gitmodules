@@ -1,0 +1,3 @@
+[submodule "pywps-flask"]
+	path = pywps-flask
+	url = https://github.com/geopython/pywps-flask.git
