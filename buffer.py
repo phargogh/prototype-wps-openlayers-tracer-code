@@ -15,7 +15,9 @@ class Buffer(Process):
                 'point_geojson',
                 'Input point geometry',
                 supported_formats=[Format('application/vnd.geo+json')],
-                mode=MODE.STRICT),  # GDAL is used to validate the vector
+                #mode=MODE.STRICT),  # GDAL is used to validate the vector
+                #mode=MODE.SIMPLE),
+                mode=MODE.NONE),
             LiteralInput(
                 'buffer_dist',
                 'Buffer distance',
@@ -50,7 +52,7 @@ class Buffer(Process):
         target_vector = driver.CreateDataSource(target_layer_name)
         target_layer = target_vector.CreateLayer(target_layer_name,  None,
                                                  ogr.wkbUnknown)
-        buffer_dist = float(request.inputs['buffer'][0].data)
+        buffer_dist = float(request.inputs['buffer_dist'][0].data)
         n_features = source_layer.GetFeatureCount()
         for feat_index, source_feature in enumerate(source_layer):
             geometry = source_feature.GetGeometryRef()
