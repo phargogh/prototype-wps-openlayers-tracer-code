@@ -8,7 +8,11 @@ Setup:
     $ git submodule update
     $ conda create -p ./env -c conda-forge python=3.9 pywps=4.5 flask requests shapely pygeoprocessing
     $ conda activate ./env
-    $ python demo_wps_server.py
+
+Starting the server, client:
+
+    (env) $ python demo_wps_server.py
+    (env) $ python demo_client.py
 
 Approach taken:
 
