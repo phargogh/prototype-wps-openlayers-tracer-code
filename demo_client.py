@@ -50,7 +50,7 @@ def call_service_vector(point):
     # inputs: https://docs.geoserver.org/stable/en/user/services/wps/operations.html#execute
     wps = owslib.wps.WebProcessingService(URL, verbose=False, skip_caps=True)
     response = wps.execute(
-        identifier='buffer',
+        identifier='buffer_vector',
         inputs=[
             ("point_geojson", str(vector_text)),
             ("buffer_dist", "10")  # literal inputs are provided as just a string value.

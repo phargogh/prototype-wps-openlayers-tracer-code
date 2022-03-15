@@ -8,7 +8,7 @@ from pywps import Process
 from pywps.validator.mode import MODE
 
 
-class Buffer(Process):
+class BufferVector(Process):
     def __init__(self):
         inputs = [
             ComplexInput(
@@ -30,12 +30,12 @@ class Buffer(Process):
                 supported_formats=[Format('application/vnd.geo+json')]),
         ]
 
-        super(Buffer, self).__init__(
+        super(BufferVector, self).__init__(
             self._handler,
-            identifier='buffer',
+            identifier='buffer_vector',
             version='0.1',
-            title='GDAL buffer a point',
-            abstract='Buffer the input feature',
+            title='GDAL buffer a point vector',
+            abstract='Buffer the input vector',
             profile='',
             inputs=inputs,
             outputs=outputs,
