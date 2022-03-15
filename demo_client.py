@@ -67,14 +67,22 @@ def call_service_vector(point):
 
 def call_service_wkt(point):
     """Example of how to call this service with WKT."""
-    pass
-
-
-def call_service_wkb(point):
-    """Example of how to call this service with WKB."""
-    pass
+    point = shapely.geometry.Point(point)
+    wps = owslib.wps.WebProcessingService(URL, verbose=False, skip_caps=True)
+    response = wps.execute(
+        identifier='buffer_wkt',
+        inputs=[
+            ('geometry_wkt', str(point.wkt)),
+            ('buffer_dist', "10"),
+        ],
+        output='OUTPUT',
+        mode=owslib.wps.SYNC,
+    )
+    for output in response.processOutputs:
+        print(output.data)
 
 
 if __name__ == '__main__':
     get_info()
     call_service_vector((90, -90))
+    call_service_wkt((50, -50))

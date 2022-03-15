@@ -1,3 +1,5 @@
+import shapely.wkb
+import shapely.wkt
 from osgeo import ogr
 from pywps import ComplexInput
 from pywps import ComplexOutput
@@ -69,5 +71,41 @@ class BufferVector(Process):
 
         response.outputs['buffered_point_geojson'].output_format = FORMATS.GEOJSON
         response.outputs['buffered_point_geojson'].file = target_layer_name
+
+        return response
+
+
+class BufferWKT(Process):
+    def __init__(self):
+        inputs = [
+            ComplexInput(
+                "geometry_wkt", "geometry well-known text",
+                supported_formats=[Format('text/plain')]),
+            LiteralInput(
+                "buffer_dist", "buffer distance", data_type='float'),
+        ]
+        outputs = [
+            ComplexOutput(
+                "buffered_geometry_wkt", "buffered geometry well-known text",
+                supported_formats=[Format('text/plain')])
+        ]
+        super(BufferWKT, self).__init__(
+            self._handler,
+            identifier='buffer_wkt',
+            version='0.1',
+            title='buffer geometry WKT',
+            abstract='buffer the input WKT geometry',
+            profile='',
+            inputs=inputs,
+            outputs=outputs,
+            store_supported=True,
+            status_supported=True
+        )
+
+    def _handler(self, request, response):
+        geom = shapely.wkt.loads(request.inputs['geometry_wkt'][0].data)
+        buffered_geom = geom.buffer(request.inputs['buffer_dist'][0].data)
+        response.outputs['buffered_geometry_wkt'].output_format = FORMATS.TEXT
+        response.outputs['buffered_geometry_wkt'].data = buffered_geom.wkt
 
         return response

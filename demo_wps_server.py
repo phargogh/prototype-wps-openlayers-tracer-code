@@ -6,6 +6,7 @@ APP = flask.Flask(__name__)
 
 PROCESSES = [
     buffer.BufferVector(),
+    buffer.BufferWKT(),
 ]
 
 SERVICE = Service(PROCESSES, ['pywps.cfg'])
