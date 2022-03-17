@@ -104,8 +104,12 @@ class BufferWKT(Process):
 
     def _handler(self, request, response):
         geom = shapely.wkt.loads(request.inputs['geometry_wkt'][0].data)
-        buffered_geom = geom.buffer(request.inputs['buffer_dist'][0].data)
+
+        # Buffer by the distance, but then simplify in order to make the
+        # geometry visually distinct from the JSON homebrew flask endpoint.
+        buffer_dist = request.inputs['buffer_dist'][0].data
+        buffered_geom = geom.buffer(
+            buffer_dist).simplify(buffer_dist / 5)
         response.outputs['buffered_geometry_wkt'].output_format = FORMATS.TEXT
         response.outputs['buffered_geometry_wkt'].data = buffered_geom.wkt
-
         return response

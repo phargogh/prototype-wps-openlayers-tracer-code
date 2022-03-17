@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.13.0/css/ol.css" type="text/css">
     <style>
       .map {
-        height: 800px;
+        height: 400px;
         width: 100%;
       }
       #form {
@@ -19,6 +19,21 @@
   </head>
   <body>
     <h2>WPS Sample</h2>
+    <ul>
+        <li>Inputs</li>
+        <ul>
+            <li>Click on the map to select a coordinate pair</li>
+            <li>Enter a buffer distance</li>
+            <li>Submit the form</li>
+        </ul>
+        </li>
+        <li>Outputs</li>
+        <ul>
+            <li>Circular geometry is from the custom flask JSON endpoint</li>
+            <li>Simplified geometry is from the WPS endpoint</li>
+        </ul>
+        </li>
+    </ul>
     <div id="form">
         <form>
             <label for="xcoord">X Coordinate</label>
@@ -65,7 +80,7 @@
                 'buffer_dist': `${buffer_dist}`
             },
             success: function(data, status, jqxhr){
-                console.log(data);
+                console.log('Adding feature from JSON');
                 const Format = new ol.format.WKT();
                 const feature = Format.readFeature(data.geometry_wkt);
                 const layer = new ol.layer.Vector({
@@ -81,27 +96,44 @@
         // There's got to be a better way to build this.
         // There's a proposed JSON extension to the WPS API
         // (https://docs.ogc.org/per/19-040.html#OGCApiProcesses), but
-        // right now it's all-XML.
+        // right now WPS is all-XML for their POST requests (which is most of
+        // them).
         var xmltext = `<wps100:Execute xmlns:wps100="http://www.opengis.net/wps/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WPS" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd"><ows110:Identifier xmlns:ows110="http://www.opengis.net/ows/1.1">buffer_wkt</ows110:Identifier><wps100:DataInputs><wps100:Input><ows110:Identifier xmlns:ows110="http://www.opengis.net/ows/1.1">geometry_wkt</ows110:Identifier><wps100:Data><wps100:LiteralData>POINT (${xcoord} ${ycoord})</wps100:LiteralData></wps100:Data></wps100:Input><wps100:Input><ows110:Identifier xmlns:ows110="http://www.opengis.net/ows/1.1">buffer_dist</ows110:Identifier><wps100:Data><wps100:LiteralData>${buffer_dist}</wps100:LiteralData></wps100:Data></wps100:Input></wps100:DataInputs><wps100:ResponseForm><wps100:ResponseDocument storeExecuteResponse="false" status="false" lineage="false"><wps100:Output><ows110:Identifier xmlns:ows110="http://www.opengis.net/ows/1.1">OUTPUT</ows110:Identifier></wps100:Output></wps100:ResponseDocument></wps100:ResponseForm></wps100:Execute>`
         console.log(xmltext);
 
-        // $.ajax({
-        //     url: 'http://127.0.0.1:5000/wps',
-        //     data: xmltext,
-        //     async: false,
-        //     type: 'POST',
-        //     contentType: 'text/xml',
-        //     crossDomain: true,
-        //     dataType: 'xml',
-        //     success: function(data, status, jqxhr){
-        //         console.log(data);
-        //     },
-        //     error: function(jqxhr, status, error){
-        //         console.log(jqxhr);
-        //         console.log(status);
-        //         console.log(error);
-        //     }
-        // });
+        $.ajax({
+            url: 'http://127.0.0.1:5000/wps',
+            data: xmltext,
+            async: false,
+            type: 'POST',
+            contentType: 'text/xml',
+            crossDomain: true,
+            dataType: 'xml',
+            success: function(data, status, jqxhr){
+                console.log('Adding feature from WPS');
+
+                //var parser = new DOMParser();
+                //var xmldoc = parser.parseFromString(data, 'text/xml');
+                //var feature_wkt = xmldoc.getElementByID
+                var outputs = data.getElementsByTagName('wps:ProcessOutputs');
+                var wkt = outputs[0].getElementsByTagName('wps:ComplexData')[0].childNodes[0].data;
+                console.log(wkt);
+
+                const Format = new ol.format.WKT();
+                const feature = Format.readFeature(wkt);
+                const layer = new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        features: [feature],
+                    })
+                });
+                map.addLayer(layer);
+            },
+            error: function(jqxhr, status, error){
+                console.log(jqxhr);
+                console.log(status);
+                console.log(error);
+            }
+        });
 
     }
 

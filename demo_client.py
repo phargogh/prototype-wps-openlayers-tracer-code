@@ -90,7 +90,7 @@ def call_json(point):
 
 
 if __name__ == '__main__':
-    #get_info()
-    #call_service_vector((90, -90))
-    #call_service_wkt((50, -50))
+    get_info()
+    call_service_vector((90, -90))
+    call_service_wkt((50, -50))
     call_json((50, -50))
