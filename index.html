@@ -44,6 +44,7 @@
           zoom: 4
         })
       });
+
       map.on('click', function(event){
         document.getElementById('xcoord').value = event.coordinate[0];
         document.getElementById('ycoord').value = event.coordinate[1];
@@ -53,9 +54,28 @@
     // Openlayers 3 doesn't have a WPS client (OL2 does), so I'm building this
     // out as a regular XML passing thing.
     function buffer_wps() {
-        var xcoord = document.getElementById('xcoord');
-        var ycoord = document.getElementById('ycoord');
-        var buffer_dist = document.getElementById('buffer_dist');
+        var xcoord = document.getElementById('xcoord').value;
+        var ycoord = document.getElementById('ycoord').value;
+        var buffer_dist = document.getElementById('buffer_dist').value;
+
+        $.get({
+            url: 'http://127.0.0.1:5000/json',
+            data: {
+                'geometry_wkt': `POINT (${xcoord} ${ycoord})`,
+                'buffer_dist': `${buffer_dist}`
+            },
+            success: function(data, status, jqxhr){
+                console.log(data);
+                const Format = new ol.format.WKT();
+                const feature = Format.readFeature(data.geometry_wkt);
+                const layer = new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        features: [feature],
+                    })
+                });
+                map.addLayer(layer);
+            }
+        });
 
         // I retrieved this XML string in pdb on the server.
         // There's got to be a better way to build this.
@@ -65,23 +85,23 @@
         var xmltext = `<wps100:Execute xmlns:wps100="http://www.opengis.net/wps/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WPS" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd"><ows110:Identifier xmlns:ows110="http://www.opengis.net/ows/1.1">buffer_wkt</ows110:Identifier><wps100:DataInputs><wps100:Input><ows110:Identifier xmlns:ows110="http://www.opengis.net/ows/1.1">geometry_wkt</ows110:Identifier><wps100:Data><wps100:LiteralData>POINT (${xcoord} ${ycoord})</wps100:LiteralData></wps100:Data></wps100:Input><wps100:Input><ows110:Identifier xmlns:ows110="http://www.opengis.net/ows/1.1">buffer_dist</ows110:Identifier><wps100:Data><wps100:LiteralData>${buffer_dist}</wps100:LiteralData></wps100:Data></wps100:Input></wps100:DataInputs><wps100:ResponseForm><wps100:ResponseDocument storeExecuteResponse="false" status="false" lineage="false"><wps100:Output><ows110:Identifier xmlns:ows110="http://www.opengis.net/ows/1.1">OUTPUT</ows110:Identifier></wps100:Output></wps100:ResponseDocument></wps100:ResponseForm></wps100:Execute>`
         console.log(xmltext);
 
-        $.ajax({
-            url: 'http://127.0.0.1:5000/wps',
-            data: xmltext,
-            async: false,
-            type: 'POST',
-            contentType: 'text/xml',
-            crossDomain: true,
-            dataType: 'xml',
-            success: function(data, status, jqxhr){
-                console.log(data);
-            },
-            error: function(jqxhr, status, error){
-                console.log(jqxhr);
-                console.log(status);
-                console.log(error);
-            }
-        });
+        // $.ajax({
+        //     url: 'http://127.0.0.1:5000/wps',
+        //     data: xmltext,
+        //     async: false,
+        //     type: 'POST',
+        //     contentType: 'text/xml',
+        //     crossDomain: true,
+        //     dataType: 'xml',
+        //     success: function(data, status, jqxhr){
+        //         console.log(data);
+        //     },
+        //     error: function(jqxhr, status, error){
+        //         console.log(jqxhr);
+        //         console.log(status);
+        //         console.log(error);
+        //     }
+        // });
 
     }
 

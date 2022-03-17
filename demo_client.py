@@ -82,7 +82,15 @@ def call_service_wkt(point):
         print(output.data)
 
 
+def call_json(point):
+    point = shapely.geometry.Point(point)
+    response = requests.get(f'http://{SERVER}:{PORT}/json', json={
+        'geometry_wkt': point.wkt, 'buffer_dist': 10})
+    print(response.json()['geometry_wkt'])
+
+
 if __name__ == '__main__':
-    get_info()
-    call_service_vector((90, -90))
-    call_service_wkt((50, -50))
+    #get_info()
+    #call_service_vector((90, -90))
+    #call_service_wkt((50, -50))
+    call_json((50, -50))
